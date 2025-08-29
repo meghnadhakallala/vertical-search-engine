@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Coventry Scholar Search</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@500;600&family=Roboto:wght@400;500&display=swap');
+
+  body {
+    font-family: 'Roboto', sans-serif;
+    margin: 0; padding: 0;
+    background: #ffffff;
+    color: #3c4043;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+  }
+
+  header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 60px 20px 30px 20px;
+    text-align: center;
+  }
+
+  header img { height: 80px; margin-bottom: 20px; }
+  h1 { font-family: 'Poppins', sans-serif; font-size: 36px; font-weight: 600; color: #202124; margin: 0 0 10px 0; }
+  .tiny-sub { font-size: 16px; color: #5f6368; margin-bottom: 60px; max-width: 600px; line-height: 1.4; }
+
+  .search-container { display: flex; flex-direction: column; align-items: center; width: 100%; max-width: 700px; margin-bottom: 50px; }
+  form.search-inline { display: flex; width: 100%; box-shadow: 0 6px 20px rgba(0,0,0,0.12); border-radius: 25px; overflow: hidden; }
+  form.search-inline input[type="text"] { flex: 1; padding: 20px 24px; font-size: 20px; border: none; outline: none; text-align: center; background-color: #f8f9fa; }
+  form.search-inline input[type="text"]::placeholder { color: #5f6368; font-style: italic; }
+  form.search-inline button { padding: 0 24px; font-size: 16px; font-weight: 600; background-color: #1a73e8; color: white; border: none; cursor: pointer; transition: background 0.2s ease, transform 0.2s ease; }
+  form.search-inline button:hover { background-color: #155ab6; transform: translateY(-2px); }
+
+  .results-list { width: 100%; max-width: 700px; margin-top: 20px; }
+  .result-item { padding: 15px 20px; border-bottom: 1px solid #e0e0e0; position: relative; }
+  .result-item a.title { font-weight: 600; font-size: 18px; color: #1a73e8; text-decoration: none; }
+  .result-item a.title:hover { text-decoration: underline; }
+  .result-meta { font-size: 14px; color: #5f6368; margin-top: 4px; }
+  .relevance-badge { position: absolute; top: 15px; right: 20px; font-size: 12px; font-weight: 600; background: #ffcc00; color: #000; padding: 2px 6px; border-radius: 4px; }
+
+  .pagination { display: flex; justify-content: center; margin: 30px 0; gap: 8px; }
+  .pagination a { padding: 8px 12px; text-decoration: none; color: #1a73e8; border-radius: 5px; border: 1px solid #1a73e8; transition: all 0.2s ease; }
+  .pagination a:hover, .pagination a.active { background: #1a73e8; color: #fff; }
+
+  footer { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; padding: 20px; font-size: 14px; color: #5f6368; border-top: 1px solid #dadce0; width: 100%; text-align: center; }
+  footer span::after { content: "|"; margin: 0 8px; }
+  footer span:last-child::after { content: ""; }
+</style>
+</head>
+<body>
+
+<header>
+  <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Coventry Logo">
+  <h1>Coventry Scholar Search</h1>
+  <div class="tiny-sub">Focused search for publications authored by Coventry University economics, finance, and accounting members.</div>
+</header>
+
+<div class="search-container">
+  <form class="search-inline" action="{{ url_for('results') }}" method="GET">
+    <input type="text" name="query" placeholder="Keyword, Author, or Title..." value="{{ query if query else '' }}">
+    <button type="submit">Search</button>
+  </form>
+
+  <!-- Results -->
+  <div class="results-list">
+    {% if no_results %}
+      <p>No results found. Try another query.</p>
+    {% endif %}
+
+    {% for doc in paginated_results %}
+    <div class="result-item">
+      <a href="{{ doc['url'] }}" target="_blank" class="title">{{ doc['title'] }}</a>
+      <div class="result-meta">Authors: {{ doc['authors_str'] }} | Year: {{ doc['date'] }}</div>
+      <div class="relevance-badge">{{ doc['score_display'] }}</div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Pagination -->
+  <div class="pagination">
+    {% for page_num in page_range %}
+      {% if page_num == current_page %}
+        <a href="{{ url_for('results', query=query, page=page_num, per_page=results_per_page) }}" class="active">{{ page_num }}</a>
+      {% else %}
+        <a href="{{ url_for('results', query=query, page=page_num, per_page=results_per_page) }}">{{ page_num }}</a>
+      {% endif %}
+    {% endfor %}
+  </div>
+</div>
+
+<footer>
+  <span>Meghna Dhakal</span>
+  <span>Information Retrieval</span>
+  <span>Task 1: Search Engine</span>
+</footer>
+
+</body>
+</html>
